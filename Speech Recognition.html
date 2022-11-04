@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      jQuery(window).on("load", () => {
+        var result = "";
+        window.SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        // Get all iframes
+        var iFrames = jQuery("iframe");
+
+        for (let iFrame of iFrames) {
+          const new_style_element =
+            iFrame.contentWindow.document.createElement("style");
+          new_style_element.textContent =
+            'span.h5p-input-wrapper.has-tip:before {content: "Haga clic en el cuadro de entrada para iniciar el dictado por voz.";font-size: 16px;line-height: 20px;color: #f00;position: absolute;top: 0;margin-top: -25px;}';
+          iFrame.contentWindow.document.head.appendChild(new_style_element);
+
+          iFrame.contentWindow.document.body.onclick = function (e) {
+            let current = jQuery(iFrame);
+            let current_input = current.contents().find("input.h5p-text-input");
+
+            if (current_input && current_input.length > 0) {
+              if (e.target && jQuery(e.target).hasClass("h5p-text-input")) {
+                testSpeech(e.target);
+              } else {
+                result = "";
+              }
+            }
+          };
+        }
+      });
+
+      function testSpeech(result) {
+        var recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.start();
+
+        recognition.addEventListener("result", (e) => {
+          let transcript = Array.from(e.results)
+            .map((result) => result[0])
+            .map((result) => result.transcript)
+            .join("");
+
+          if (jQuery(result)) {
+            jQuery(result).val(transcript);
+          }
+        });
+
+        recognition.onaudiostart = function (event) {
+          //Fired when the user agent has started to capture audio.
+          console.log("SpeechRecognition.onaudiostart");
+        };
+
+        recognition.onaudioend = function (event) {
+          //Fired when the user agent has finished capturing audio.
+          console.log("SpeechRecognition.onaudioend");
+        };
+
+        recognition.onend = function (event) {
+          //Fired when the speech recognition service has disconnected.
+          console.log("SpeechRecognition.onend");
+        };
+
+        recognition.onnomatch = function (event) {
+          //Fired when the speech recognition service returns a final result with no significant recognition. This may involve some degree of recognition, which doesn't meet or exceed the confidence threshold.
+          console.log("SpeechRecognition.onnomatch");
+        };
+
+        recognition.onsoundstart = function (event) {
+          //Fired when any sound — recognisable speech or not — has been detected.
+          console.log("SpeechRecognition.onsoundstart");
+        };
+
+        recognition.onsoundend = function (event) {
+          //Fired when any sound — recognisable speech or not — has stopped being detected.
+          console.log("SpeechRecognition.onsoundend");
+        };
+
+        recognition.onspeechstart = function (event) {
+          //Fired when sound that is recognised by the speech recognition service as speech has been detected.
+          console.log("SpeechRecognition.onspeechstart");
+        };
+        recognition.onstart = function (event) {
+          //Fired when the speech recognition service has begun listening to incoming audio with intent to recognize grammars associated with the current SpeechRecognition.
+          console.log("SpeechRecognition.onstart");
+        };
+      }
+    </script>
+  </body>
+</html>
